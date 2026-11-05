@@ -109,6 +109,16 @@ BAG.UI = (function () {
       el.value = Math.round(AU.settings[k] * 100);
       el.addEventListener('input', () => { AU.init(); AU.setVol(k, el.value / 100); });
     });
+    $('#btn-apna').addEventListener('click', () => $('#apna-file').click());
+    $('#apna-file').addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      AU.playCustom(f);
+      $('#btn-apna-stop').classList.remove('hide');
+      U.toast('🎵 Ab baj raha hai: ' + f.name.replace(/\.[^.]+$/, '').slice(0, 40));
+      e.target.value = '';
+    });
+    $('#btn-apna-stop').addEventListener('click', () => { AU.stopCustom(); $('#btn-apna-stop').classList.add('hide'); U.toast('Game ka music wapas!'); });
     $('#btn-hostel').addEventListener('click', () => {
       AU.init(); AU.hostelMode();
       ['music', 'sfx', 'voice'].forEach(k => { $('#vol-' + k).value = Math.round(AU.settings[k] * 100); });
@@ -152,6 +162,7 @@ BAG.UI = (function () {
 
   function syncMute() {
     const m = AU.settings.muted;
+    if (m) AU.stopSpeech();
     $('#btn-mute').textContent = m ? '🔇' : '🔊';
     $('#btn-mute').title = m ? 'Awaaz chalu karo (M)' : 'Mute karo (M)';
     $('#mute-badge').classList.toggle('hide', !m);

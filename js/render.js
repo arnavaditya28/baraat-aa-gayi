@@ -43,7 +43,8 @@ BAG.R = (function () {
     c.fillStyle = 'rgba(0,0,0,0.28)';
     c.beginPath(); c.ellipse(0, 0, 15 * s, 5 * s, 0, 0, Math.PI * 2); c.fill();
     c.scale(s, s);
-    c.translate(0, -bob);
+    const hop = p.hopT > 0 ? Math.sin((p.hopT / 0.45) * Math.PI) * 16 : 0;
+    c.translate(0, -bob - hop);
     c.rotate(sway);
     // legs
     const leg = moving ? Math.sin(p.walk * 11) * 4 : 0;

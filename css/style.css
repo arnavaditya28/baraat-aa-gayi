@@ -159,6 +159,10 @@ h2 { margin: 0 0 4px; color: var(--gold); font-size: 30px; }
 .slider { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 420px; font-size: 18px; font-weight: 700; }
 .slider input { width: 200px; accent-color: var(--marigold); }
 
+.apna-gaana { display: flex; flex-direction: column; align-items: center; gap: 4px; border-top: 1px dashed rgba(255, 209, 102, 0.35); padding-top: 8px; width: 420px; }
+.muted.small { font-size: 13px; }
+#game { cursor: default; }
+
 /* ===== News ===== */
 #news { background: rgba(10, 2, 18, 0.85); z-index: 45; }
 .news-box { width: 960px; background: #0b1020; border: 4px solid #e10600; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; align-items: stretch; box-shadow: 0 0 60px rgba(225, 6, 0, 0.4); }

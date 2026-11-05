@@ -11,8 +11,18 @@ Play solo or with two people on one laptop.
 | Move | WASD | Arrow keys |
 | Do the job (hold) | E | Enter |
 
+- **Mouse**: click anyone or anything. Every relative, stall and object reacts
+- **E / Enter** near someone: talk to them or use the thing
 - **Esc**: pause
-- **M**: mute or unmute (any time)
+- **M**: mute or unmute (any time, also stops voices)
+
+The venue is a big map you walk around: entrance road and parking, the red carpet and gate, the dance floor and DJ, the shamiyana, the mandap, the food court (kitchen, buffet, mithai, golgappa and chai stalls), the bride's room, the photo booth, the jhula and the gift table. A minimap and edge arrows show where problems are. In 2-player the camera zooms out to keep both players on screen.
+
+Things to try: chai for a speed boost, golgappe, DJ song requests, the dhol, the photo booth, the jhula, fireworks, knocking on the bride's room door, setting off a car alarm in the parking.
+
+Characters speak their lines out loud using the browser's built-in voices (Indian English voices such as Microsoft Heera/Ravi when installed), each with their own pitch and speed.
+
+**Apna Gaana**: in the sound settings you can play any song file from your own computer as background music. It plays locally and is never uploaded.
 
 When a ❗ bubble appears somewhere, go there and hold your action key. If the timer runs out, the family's **Izzat** drops. At 0 the wedding is cancelled.
 

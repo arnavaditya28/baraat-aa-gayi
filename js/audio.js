@@ -108,6 +108,8 @@ BAG.Audio = (function () {
       tone(t, 'triangle', 3450, 0.04, 0.04, out);
     } else if (kind === 'clap') {
       for (let i = 0; i < 3; i++) noise(t + i * 0.012, 0.05, 'bandpass', 1300, 1.2, 0.3, out);
+    } else if (kind === 'kick') {
+      tone(t, 'sine', 120, 0.25, 0.9, out, { to: 42, glide: 0.12 });
     } else if (kind === 'cricket') {
       for (let i = 0; i < 3; i++) tone(t + i * 0.045, 'sine', 4300 + Math.random() * 300, 0.03, 0.06, out);
     }
@@ -129,6 +131,10 @@ BAG.Audio = (function () {
       }
     } else if (type === 'whistle') {
       tone(t, 'sine', f * 2, dur, 0.1, out, { vib: 7, vibDepth: 0.015, attack: 0.01, release: 0.05 });
+    } else if (type === 'synth') {
+      // filmy synth lead: two detuned saws with a quick filter pluck
+      tone(t, 'sawtooth', f, dur, 0.07, out, { lp: 2400, detune: -9, attack: 0.01, release: 0.06, vib: 6, vibDepth: 0.006 });
+      tone(t, 'sawtooth', f * 2, dur, 0.04, out, { lp: 3000, detune: 9, attack: 0.01, release: 0.06 });
     } else if (type === 'flute') {
       tone(t, 'sine', f * 2, dur, 0.11, out, { vib: 5, vibDepth: 0.008, attack: 0.04, release: 0.1 });
       tone(t, 'triangle', f * 2, dur, 0.04, out, { attack: 0.04, release: 0.1 });
@@ -181,7 +187,7 @@ BAG.Audio = (function () {
   A.currentTrack = () => trackName;
 
   function scheduler() {
-    if (!ctx || !track) return;
+    if (!ctx || !track || customEl) return;
     while (nextTime < ctx.currentTime + 0.12) {
       playStep(step, nextTime);
       nextTime += 60 / (track.bpm * tempoMul) / 4;
@@ -263,9 +269,95 @@ BAG.Audio = (function () {
     neigh() {
       const t = ctx.currentTime;
       tone(t, 'sawtooth', 700, 0.7, 0.1, sfxBus, { to: 380, glide: 0.65, vib: 14, vibDepth: 0.06, bp: 1400, q: 2 });
-    }
+    },
+    // TV-serial style sad violin meme
+    sadviolin() {
+      const t = ctx.currentTime;
+      [69, 67, 65, 64, 62].forEach((m, i) => tone(t + i * 0.32, 'sawtooth', mtof(m), i === 4 ? 1.2 : 0.34, 0.07, sfxBus, { lp: 2200, bp: 1100, q: 0.8, vib: 6.5, vibDepth: 0.012, attack: 0.08 }));
+    },
+    dholriff() {
+      const t = ctx.currentTime;
+      'B.tB.tB.BtBtB.B.'.split('').forEach((ch, i) => { if (ch !== '.') drum('dhol', ch, t + i * 0.11, sfxBus); });
+    },
+    caralarm() {
+      const t = ctx.currentTime;
+      for (let i = 0; i < 6; i++) tone(t + i * 0.25, 'square', i % 2 ? 900 : 1300, 0.22, 0.06, sfxBus, { lp: 3000 });
+    },
+    slurp() { const t = ctx.currentTime; const f = noise(t, 0.5, 'bandpass', 600, 4, 0.3, sfxBus); f.frequency.exponentialRampToValueAtTime(2000, t + 0.45); },
+    crunch() { const t = ctx.currentTime; for (let i = 0; i < 4; i++) noise(t + i * 0.04, 0.05, 'highpass', 2000, 0.5, 0.3, sfxBus); },
+    knock() { const t = ctx.currentTime; for (let i = 0; i < 3; i++) { tone(t + i * 0.16, 'sine', 180, 0.08, 0.5, sfxBus, { to: 90 }); noise(t + i * 0.16, 0.04, 'bandpass', 500, 2, 0.3, sfxBus); } },
+    boing() { const t = ctx.currentTime; tone(t, 'triangle', 300, 0.35, 0.15, sfxBus, { to: 900, glide: 0.2, vib: 18, vibDepth: 0.05 }); },
+    gift() { const t = ctx.currentTime; [76, 79, 84].forEach((m, i) => tone(t + i * 0.06, 'triangle', mtof(m), 0.2, 0.1, sfxBus)); }
   };
   A.sfx = function (name) { if (ctx && FX[name]) FX[name](); };
+
+  // ---- Real voices (browser speech synthesis) ----
+  const synth = window.speechSynthesis || null;
+  let voices = [];
+  const FEMALE = /heera|neerja|kalpana|swara|veena|lekha|zira|aria|jenny|susan|hazel|samantha|female|sonia|libby|ava|emma/i;
+  const MALE = /ravi|hemant|prabhat|madhur|rishi|david|mark|george|guy|male|ryan|daniel|brian|andrew/i;
+  function loadVoices() { if (synth) voices = synth.getVoices(); }
+  if (synth) { loadVoices(); synth.onvoiceschanged = loadVoices; }
+  function pickVoice(g) {
+    if (!voices.length) loadVoices();
+    const want = g === 'f' ? FEMALE : MALE;
+    const tiers = [
+      v => /en-IN/i.test(v.lang) && want.test(v.name),
+      v => /hi-IN/i.test(v.lang) && want.test(v.name),
+      v => /en-IN/i.test(v.lang),
+      v => /hi-IN/i.test(v.lang),
+      v => /^en/i.test(v.lang) && want.test(v.name),
+      v => /^en/i.test(v.lang)
+    ];
+    for (const f of tiers) { const v = voices.find(f); if (v) return v; }
+    return null;
+  }
+  A.hasVoices = () => !!synth && voices.length > 0;
+  // vp = {g, pitch, rate}; priority speech interrupts whoever is talking.
+  A.speak = function (text, vp, priority) {
+    if (S.muted || S.voice <= 0.01) return false;
+    if (!synth || !voices.length) { A.babble(text, vp && vp.g === 'f' ? 260 : 130); return false; }
+    if (!priority && (synth.speaking || synth.pending)) return false;
+    if (priority) synth.cancel();
+    const clean = text.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '').replace(/[#*"()]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!clean) return false;
+    const u = new SpeechSynthesisUtterance(clean);
+    vp = vp || { g: 'm', pitch: 1, rate: 1 };
+    const v = pickVoice(vp.g);
+    if (v) { u.voice = v; u.lang = v.lang; }
+    // a female voice reading a male part gets pitched down, and the other way round
+    let pitch = vp.pitch;
+    if (v && vp.g === 'm' && FEMALE.test(v.name)) pitch *= 0.75;
+    if (v && vp.g === 'f' && MALE.test(v.name)) pitch *= 1.3;
+    u.pitch = Math.max(0.1, Math.min(2, pitch));
+    u.rate = vp.rate;
+    u.volume = Math.min(1, S.voice * 1.2);
+    synth.speak(u);
+    return true;
+  };
+  A.stopSpeech = function () { if (synth) synth.cancel(); };
+
+  // ---- "Apna Gaana": play a song file from the player's own laptop ----
+  let customEl = null, customSrc = null;
+  A.playCustom = function (file) {
+    A.init();
+    A.stopCustom();
+    customEl = new Audio(URL.createObjectURL(file));
+    customEl.loop = true;
+    customSrc = ctx.createMediaElementSource(customEl);
+    customSrc.connect(musicBus);
+    if (trackGain) trackGain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.1);
+    customEl.play();
+    if (A.onLyric) A.onLyric('');
+  };
+  A.stopCustom = function () {
+    if (!customEl) return;
+    customEl.pause(); URL.revokeObjectURL(customEl.src);
+    try { customSrc.disconnect(); } catch (e) { /* gone */ }
+    customEl = null; customSrc = null;
+    const name = trackName; trackName = null; A.playTrack(name);
+  };
+  A.customOn = () => !!customEl;
 
   // Animal-Crossing style talking blips; pitch per character.
   A.babble = function (text, pitch) {

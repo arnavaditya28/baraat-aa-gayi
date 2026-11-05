@@ -127,6 +127,26 @@ BAG.CAST = {
     name: 'Pandit Ji', skin: '#c99064', outfit: '#f39c12', hair: 'bald', acc: [], voice: 140,
     idle: ['Muhurat 10:42 ka hai. 10:43 nahi chalega.', 'Jaldi karo yajmaan!', 'Shubh samay nikal raha hai!']
   },
+  chaiwala: {
+    name: 'Chai Wale Kishan', skin: '#a86c40', outfit: '#e17055', hair: 'short', acc: ['mustache'], voice: 120,
+    idle: ['Garma garam chai! Ek cutting?', 'Chai pi lo, kaam apne aap ho jaayega.']
+  },
+  golgappa: {
+    name: 'Golgappa Bhaiya', skin: '#9c6640', outfit: '#fdcb6e', hair: 'cap', voice: 125,
+    idle: ['Teekha ya meetha?', 'Ek aur? Ek aur! Golgappa kabhi kam nahi padta.']
+  },
+  dholi: {
+    name: 'Dholi Pappu', skin: '#b0764a', outfit: '#d63031', hair: 'turban', hat: '#fdcb6e', acc: ['mustache'], voice: 120,
+    idle: ['Dhol bajaun? Dhinchak!', 'Mera dhol sunke ghodi bhi naachti hai.']
+  },
+  verma: {
+    name: 'Gate Wale Verma Ji', skin: '#c48a5a', outfit: '#636e72', hair: 'short', acc: ['glasses', 'mustache'], voice: 110,
+    idle: ['Card dikhao! Ladke wale ya ladki wale?', 'Bina card ke entry nahi. Rishtedaar ho toh bhi nahi.']
+  },
+  tina: {
+    name: 'Saheli Tina', skin: '#e0a878', outfit: '#00b894', hair: 'long', acc: ['bindi'], dupatta: '#ffeaa7', voice: 300,
+    idle: ['Dulhan taiyar ho rahi hai, andar mat aana!', 'Juta chupaai ka rate 21,000 hai, bata dena dulhe ko.']
+  },
   dulha: { name: 'Dulha Raja', skin: '#c68b5e', outfit: '#f6e7c1', hair: 'sehra', hat: '#e17055', voice: 140,
     idle: ['Main kya karun? Main toh dulha hoon.', 'Koi mujhe paani pila do.'] },
   dulhan: { name: 'Dulhan', skin: '#dba27a', outfit: '#c0392b', hair: 'veil', dupatta: '#d63031', voice: 280,
@@ -336,3 +356,76 @@ BAG.TRACKS = {
     lyrics: ['Shaadi cancel... rishtedaar khush...']
   }
 };
+
+// -------- Lines when you click a character or press E next to them --------
+BAG.POKE = {
+  fufaji: ['Kya hai? Ab yaad aaya Fufaji ka?', 'Maine kuch nahi kaha. Bas bata raha hoon.', 'Mera paneer kahan hai?'],
+  pinky: ['Aa gaye? Ruko, ladke ki photo dikhati hoon!', '{name}, tum toh bade ho gaye! Shaadi kab?', 'Mere paas teen rishte hain, teeno doctor!'],
+  bablu: ['Aaja naach le! Ek step sikhata hoon!', 'Kamar dard? Naachne se theek hota hai!', 'Ek hi step hai, par dil se hai!'],
+  sharma: ['Bunty ab Canada mein hai, pata hai?', 'Hamari Sweety ne toh khud mehendi lagayi thi.', 'Decoration theek hai. Bas theek.'],
+  mama: ['Kuch bhi kharab ho, Mama ko bolo.', 'Ye taar? Iska bhi jugaad hai.', 'Tape aur taar, zindagi ke do yaar.'],
+  dadi: ['Kuch khaya? Jaa pehle kha ke aa!', 'Itna patla kyun ho gaya hai?', 'Humare zamaane mein shaadi saat din chalti thi.'],
+  selfie: ['Ruk ruk, ek selfie! Ek, do, teen!', 'Is lighting mein main kitni achhi lag rahi hoon na?', 'Tag kar dungi, tension mat lo.'],
+  chotu: ['Hum kuch nahi kar rahe!', 'Gulab jamun kahan hai?', 'Mummy ko mat batana!'],
+  gupta: ['Ek minute, call pe hoon!', 'Haan haan, sab bhej diya... nahi bheja.', 'Yahan network kyun nahi aa raha?'],
+  nani: ['Aa mere bachche, kuch meetha khayega?', 'Tera naam kya tha beta? Achha achha.', 'Paas aa, aashirwad le ja.'],
+  dj: ['Kaunsa gaana? Bolo bolo!', 'Bass full hai, dil full hai!'],
+  pandey: ['Haath mat lagao, garam hai!', 'Ek plate extra chahiye? Ho jaayega.', 'Paneer ki tension mat lo. Thodi si lo.'],
+  raju: ['Dhun bajaun? Do sau lagenge.', 'Hum 1995 se baja rahe hain!'],
+  lallan: ['Rani ko gussa mat dilana.', 'Ghodi ki bhi feelings hoti hain.'],
+  click: ['Smile! Thoda aur! Daant dikhao!', 'Ek candid... natural raho... natural!'],
+  tentwala: ['Haan haan, majboot hai. Haath mat lagao.', 'Bas teen baans pe khada hai, tension mat lo.'],
+  pandit: ['Yajmaan, muhurat yaad hai na?', 'Shubh shubh bolo!'],
+  dulha: ['Bhai mujhe bachao, sehra mein garmi lag rahi hai.', 'Mujhe kisi ne khana nahi diya.', 'Main kya karun? Main toh dulha hoon.'],
+  dulhan: ['Mera lehenga pacchis kilo ka hai, pata hai?', 'Sab theek hai na? Sach batao!'],
+  chaiwala: ['Garma garam chai! Ek cutting?', 'Chai piyo, speed badhao!'],
+  golgappa: ['Teekha ya meetha?', 'Ek aur? Golgappa kabhi kam nahi padta.'],
+  dholi: ['Dhol bajaun? Dhinchak!', 'Ek taal pe poori baraat naachegi!'],
+  verma: ['Card dikhao! Ladke wale ya ladki wale?', 'Aap toh ghar ke ho, jao jao.'],
+  tina: ['Dulhan taiyar ho rahi hai, andar mat aana!', 'Juta chupaai ka rate 21,000. Final.'],
+  band: ['Pom pom pom!', 'Bhaiya note udao, josh aayega!'],
+  ghodi: ['Hiiihiii!', '*Rani ne aapko ghoor ke dekha*'],
+  players: ['Kaam pe dhyaan do!', 'Main busy hoon, Fufaji ko dekho!', 'Paneer bacha hai kya?']
+};
+
+// Voice settings for speech. g = m/f, pitch and rate for the browser voice.
+BAG.VOICES = {
+  fufaji: { g: 'm', pitch: 0.7, rate: 0.92 }, pinky: { g: 'f', pitch: 1.35, rate: 1.12 }, bablu: { g: 'm', pitch: 1.05, rate: 1.12 },
+  sharma: { g: 'f', pitch: 1.15, rate: 1.0 }, mama: { g: 'm', pitch: 0.9, rate: 1.05 }, dadi: { g: 'f', pitch: 1.05, rate: 0.85 },
+  selfie: { g: 'f', pitch: 1.5, rate: 1.15 }, chotu: { g: 'm', pitch: 1.9, rate: 1.25 }, gupta: { g: 'm', pitch: 0.85, rate: 1.18 },
+  nani: { g: 'f', pitch: 1.1, rate: 0.82 }, dj: { g: 'm', pitch: 1.1, rate: 1.2 }, pandey: { g: 'm', pitch: 0.8, rate: 1.0 },
+  raju: { g: 'm', pitch: 0.9, rate: 1.05 }, lallan: { g: 'm', pitch: 0.95, rate: 1.0 }, click: { g: 'm', pitch: 1.15, rate: 1.15 },
+  tentwala: { g: 'm', pitch: 0.85, rate: 0.95 }, pandit: { g: 'm', pitch: 0.8, rate: 0.9 }, dulha: { g: 'm', pitch: 1.0, rate: 1.0 },
+  dulhan: { g: 'f', pitch: 1.2, rate: 1.0 }, chaiwala: { g: 'm', pitch: 1.0, rate: 1.1 }, golgappa: { g: 'm', pitch: 0.95, rate: 1.1 },
+  dholi: { g: 'm', pitch: 1.0, rate: 1.1 }, verma: { g: 'm', pitch: 0.85, rate: 1.0 }, tina: { g: 'f', pitch: 1.3, rate: 1.1 },
+  kurta: { g: 'm', pitch: 1.0, rate: 1.05 }, lehenga: { g: 'f', pitch: 1.15, rate: 1.05 }
+};
+
+// DJ song requests (all original; each plays one of the tracks below).
+BAG.DJ_REQUESTS = [
+  { name: 'Chal Hat Fufaji (Remix)', track: 'dance' },
+  { name: 'Paneer Mera Pyaar', track: 'title' },
+  { name: 'Ghodi Pe Dil Aa Gaya', track: 'chase' },
+  { name: 'Sharma Ji Ka Disco', track: 'dance' },
+  { name: 'Hero Ki Entry (Slow Motion)', track: 'hero' },
+  { name: 'Mama Jugaadu Anthem', track: 'baraat' }
+];
+
+Object.assign(BAG.TRACKS, {
+  // Item-number style dance floor track
+  dance: {
+    bpm: 128, root: 61, scale: [0, 2, 3, 5, 7, 8, 10], lead: 'synth', chords: [1, 6, 7, 1],
+    drums: { kick: 'X...X...X...X...', dhol: '..t...t...t..tt.', clap: '....c.......c...', chimta: 'k.k.k.k.k.k.k.k.' },
+    bassPat: 'X.xX..x.X.xX..x.',
+    melody: '5 5 . 4 3 . 1 . | 3 4 5 . 4 3 4 . | 5 5 . 4 3 . 1 3 | 2 . 1 . _7 . 1 .',
+    lyrics: ['Chal hat Fufaji, aaj naachna hai!', 'Paneer khatam, par party abhi baaki hai!', 'DJ wale Bunty, volume badhao!', 'Sharma Aunty bhi naach rahi hai, dekho!']
+  },
+  // Slow-motion hero entry for the dulha
+  hero: {
+    bpm: 84, root: 52, scale: [0, 1, 4, 5, 7, 8, 10], lead: 'brass', chords: [1, 1, 2, 1], drone: true,
+    drums: { kick: 'X.....X.X.......', dhol: 'B.......B..t....' },
+    bassPat: 'X.....X.X.......',
+    melody: '1 . . . 2 . 3 . | 5 . . . . . 3 . | 2 . . . 3 . 2 . | 1 . . . . . - -',
+    lyrics: ['(slow motion mein dulha aa raha hai...)', 'Sehra bhi, swag bhi, ghodi bhi!']
+  }
+});
