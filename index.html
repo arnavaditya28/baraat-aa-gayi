@@ -91,17 +91,27 @@
 
     <!-- ===== Settings ===== -->
     <div id="settings" class="screen dim hide">
-      <div class="panel center-panel">
+      <div class="panel center-panel wide settings-panel">
         <h2>Awaaz (Mummy so rahi hai?)</h2>
+        <div class="settings-cols">
+        <div class="settings-col">
         <label class="slider">🎵 Music <input id="vol-music" type="range" min="0" max="100"></label>
         <label class="slider">💥 Sound Effects <input id="vol-sfx" type="range" min="0" max="100"></label>
         <label class="slider">🗣️ Rishtedaaron ki awaaz <input id="vol-voice" type="range" min="0" max="100"></label>
         <button id="btn-hostel" class="btn">🤫 Hostel Mode (sab dheema)</button>
         <div class="apna-gaana">
-          <button id="btn-apna" class="btn">🎵 Apna Gaana Lagao (laptop se)</button>
-          <button id="btn-apna-stop" class="btn hide">⏹ Apna gaana band karo</button>
+          <button id="btn-apna" class="btn">🎵 Ek Gaana Har Jagah (laptop se)</button>
+          <button id="btn-apna-stop" class="btn hide">⏹ Ye gaana band karo</button>
           <input id="apna-file" type="file" accept="audio/*" class="hide">
-          <div class="muted small">Koi bhi song file chuno. Ye sirf aapke laptop pe bajega, kahin upload nahi hota.</div>
+          <div class="muted small">Ek hi song poori shaadi mein bajega.</div>
+        </div>
+        </div>
+        <div class="settings-col bolly">
+          <div class="bolly-head">🎬 Bollywood Mode</div>
+          <div class="muted small">Har situation ke liye apna Bollywood gaana chuno. Game khud badalta rahega. Files sirf aapke laptop pe rehti hain.</div>
+          <div id="bolly-slots"></div>
+          <input id="bolly-file" type="file" accept="audio/*" class="hide">
+        </div>
         </div>
         <p class="muted"><b>M</b> dabao kabhi bhi, sab mute/unmute ho jaayega.</p>
         <button id="btn-settings-close" class="big-btn">Theek Hai</button>

@@ -166,10 +166,56 @@ BAG.Audio = (function () {
     }
   }
 
+  // ---- Bollywood Mode: the player's own song file for each situation ----
+  const SLOT_OF = {
+    title: 'main', setup: 'main', pinky: 'main', baraat: 'baraat', hero: 'baraat', dance: 'dance',
+    fufaji: 'sad', djsad: 'sad', lose: 'sad', chase: 'chase', pheras: 'vidaai', vidaai: 'vidaai'
+  };
+  const slots = {};
+  let activeSlot = null;
+  function ensureEl(s) {
+    if (s.el) return;
+    s.url = URL.createObjectURL(s.blob);
+    s.el = new Audio(s.url); s.el.loop = true;
+    s.src = ctx.createMediaElementSource(s.el);
+    s.gain = ctx.createGain(); s.gain.gain.value = 0.0001;
+    s.src.connect(s.gain); s.gain.connect(musicBus);
+  }
+  function switchSlot(slot) {
+    if (slot === activeSlot) return;
+    const old = activeSlot && slots[activeSlot];
+    if (old && old.el) {
+      old.gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.25);
+      setTimeout(() => { if (activeSlot !== old.slot && old.el) old.el.pause(); }, 1200);
+    }
+    activeSlot = slot;
+    if (slot) {
+      const s = slots[slot];
+      ensureEl(s);
+      s.el.play().catch(() => { /* blocked until a click */ });
+      s.gain.gain.setTargetAtTime(1, ctx.currentTime, 0.25);
+      if (A.onLyric) A.onLyric('');
+    }
+  }
+  function freeSlot(slot) {
+    const s = slots[slot];
+    if (!s) return;
+    if (s.el) { s.el.pause(); try { s.src.disconnect(); s.gain.disconnect(); } catch (e) { /* gone */ } URL.revokeObjectURL(s.url); }
+    delete slots[slot];
+    if (activeSlot === slot) activeSlot = null;
+  }
+  function refresh() { const t = trackName; trackName = null; A.playTrack(t); }
+  A.setSlot = function (slot, blob, name) { freeSlot(slot); slots[slot] = { slot, blob, name }; if (ctx) refresh(); };
+  A.clearSlot = function (slot) { freeSlot(slot); if (ctx) refresh(); };
+  A.slotName = slot => slots[slot] ? slots[slot].name : null;
+  A._activeSlot = () => activeSlot;
+
   A.playTrack = function (name) {
     if (!ctx) { A._pending = name; return; }
     if (name === trackName) return;
     trackName = name;
+    const slot = SLOT_OF[name];
+    switchSlot(slot && slots[slot] && !customEl ? slot : null);
     if (trackGain) {
       const old = trackGain;
       old.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.12);
@@ -187,7 +233,7 @@ BAG.Audio = (function () {
   A.currentTrack = () => trackName;
 
   function scheduler() {
-    if (!ctx || !track || customEl) return;
+    if (!ctx || !track || customEl || activeSlot) return;
     while (nextTime < ctx.currentTime + 0.12) {
       playStep(step, nextTime);
       nextTime += 60 / (track.bpm * tempoMul) / 4;
@@ -347,6 +393,7 @@ BAG.Audio = (function () {
     customSrc = ctx.createMediaElementSource(customEl);
     customSrc.connect(musicBus);
     if (trackGain) trackGain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.1);
+    switchSlot(null);
     customEl.play();
     if (A.onLyric) A.onLyric('');
   };

@@ -109,6 +109,7 @@ BAG.UI = (function () {
       el.value = Math.round(AU.settings[k] * 100);
       el.addEventListener('input', () => { AU.init(); AU.setVol(k, el.value / 100); });
     });
+    setupBollywood();
     $('#btn-apna').addEventListener('click', () => $('#apna-file').click());
     $('#apna-file').addEventListener('change', e => {
       const f = e.target.files && e.target.files[0];
@@ -138,6 +139,56 @@ BAG.UI = (function () {
     $('#btn-menu').addEventListener('click', () => { hide('#result'); toTitle(); });
     $('#btn-news-next').addEventListener('click', () => finishNews());
   };
+
+  // ---------- Bollywood Mode: a song file per situation, saved in this browser (IndexedDB) ----------
+  const SLOTS = [
+    ['main', '🏠 Menu / Taiyari'], ['baraat', '🐴 Baraat entry'], ['dance', '🕺 Dance floor / DJ'],
+    ['sad', '😢 Sad moment (Fufaji)'], ['chase', '🏃 Ghodi chase'], ['vidaai', '💐 Pheras / Vidaai']
+  ];
+  function db() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('baraat-songs', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('songs');
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    });
+  }
+  async function dbDo(mode, fn) {
+    const d = await db();
+    return new Promise((res, rej) => { const tx = d.transaction('songs', mode); const q = fn(tx.objectStore('songs')); tx.oncomplete = () => res(q && q.result); tx.onerror = () => rej(tx.error); });
+  }
+  function setupBollywood() {
+    const box = $('#bolly-slots'), input = $('#bolly-file');
+    let picking = null;
+    const draw = () => {
+      box.innerHTML = SLOTS.map(([id, label]) => {
+        const nm = AU.slotName(id);
+        return '<div class="bolly-row"><span class="b-label">' + label + '</span><span class="b-file' + (nm ? '' : ' empty') + '">' +
+          (nm ? '♪ ' + esc(nm) : 'game ka gaana') + '</span><button class="btn" data-pick="' + id + '">Chuno</button>' +
+          (nm ? '<button class="btn" data-clear="' + id + '" title="Hatao">✕</button>' : '') + '</div>';
+      }).join('');
+    };
+    box.addEventListener('click', e => {
+      const pk = e.target.dataset.pick, cl = e.target.dataset.clear;
+      if (pk) { picking = pk; input.click(); }
+      if (cl) { AU.clearSlot(cl); dbDo('readwrite', s => s.delete(cl)).catch(() => {}); draw(); }
+    });
+    input.addEventListener('change', () => {
+      const f = input.files && input.files[0];
+      if (!f || !picking) return;
+      AU.init();
+      const name = f.name.replace(/\.[^.]+$/, '').slice(0, 50);
+      AU.setSlot(picking, f, name);
+      dbDo('readwrite', s => s.put({ name, blob: f }, picking)).catch(() => U.toast('Browser ne gaana save nahi kiya, par abhi bajega.'));
+      U.toast('🎬 ' + SLOTS.find(s => s[0] === picking)[1] + ': ' + name);
+      input.value = ''; draw();
+    });
+    // load songs saved earlier
+    if (window.indexedDB) {
+      Promise.all(SLOTS.map(([id]) => dbDo('readonly', s => s.get(id)).then(v => { if (v && v.blob) AU.setSlot(id, v.blob, v.name); }).catch(() => {})))
+        .then(draw);
+    }
+    draw();
+  }
 
   function begin() {
     hide('#title'); show('#hud');

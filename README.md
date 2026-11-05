@@ -22,7 +22,7 @@ Things to try: chai for a speed boost, golgappe, DJ song requests, the dhol, the
 
 Characters speak their lines out loud using the browser's built-in voices (Indian English voices such as Microsoft Heera/Ravi when installed), each with their own pitch and speed.
 
-**Apna Gaana**: in the sound settings you can play any song file from your own computer as background music. It plays locally and is never uploaded.
+**Bollywood Mode**: in the sound settings, pick a song file from your own computer for each situation (menu/taiyari, baraat entry, dance floor, sad Fufaji moments, ghodi chase, pheras/vidaai). The game switches between them as the situation changes and remembers your picks in the browser. There is also a single "one song everywhere" option. Files stay on your computer and are never uploaded; the game itself ships only original music.
 
 When a ❗ bubble appears somewhere, go there and hold your action key. If the timer runs out, the family's **Izzat** drops. At 0 the wedding is cancelled.
 

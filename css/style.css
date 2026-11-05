@@ -160,6 +160,17 @@ h2 { margin: 0 0 4px; color: var(--gold); font-size: 30px; }
 .slider input { width: 200px; accent-color: var(--marigold); }
 
 .apna-gaana { display: flex; flex-direction: column; align-items: center; gap: 4px; border-top: 1px dashed rgba(255, 209, 102, 0.35); padding-top: 8px; width: 420px; }
+.settings-panel { width: 1000px; }
+.settings-cols { display: flex; gap: 24px; align-items: flex-start; text-align: left; }
+.settings-col { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.settings-col.bolly { flex: 1; align-items: stretch; border-left: 1px dashed rgba(255, 209, 102, 0.35); padding-left: 20px; }
+.bolly-head { font-size: 22px; font-weight: 800; color: var(--gold); }
+.bolly-row { display: flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.25); border-radius: 10px; padding: 5px 8px; }
+.bolly-row .b-label { width: 170px; font-weight: 700; font-size: 15px; }
+.bolly-row .b-file { flex: 1; font-size: 13px; color: #ffeaa7; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.bolly-row .b-file.empty { color: #a99; font-style: italic; }
+.bolly-row .btn { padding: 2px 10px; font-size: 14px; }
+#bolly-slots { display: flex; flex-direction: column; gap: 5px; }
 .muted.small { font-size: 13px; }
 #game { cursor: default; }
 

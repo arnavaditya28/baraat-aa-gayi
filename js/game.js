@@ -109,6 +109,7 @@ window.BAG = window.BAG || {};
     cv.addEventListener('mousemove', e => { [mouse.sx, mouse.sy] = pos(e); });
     cv.addEventListener('mouseleave', () => { mouse.sx = -1; mouse.hover = null; cv.style.cursor = 'default'; });
     cv.addEventListener('mousedown', e => {
+      mouse.clicked = true;
       if (state !== 'play') return;
       [mouse.sx, mouse.sy] = pos(e);
       const [wx, wy] = toWorld(mouse.sx, mouse.sy);
@@ -431,13 +432,15 @@ window.BAG = window.BAG || {};
     w.shake = 12;
     floatText(pt.x, pt.y - 30, '-' + cr.d.penalty + ' Izzat', '#ff7675');
     if (w.izzat <= 0) { lose(pt); return; }
-    if (w.elapsed - w.lastFreeze > 14 || cr.d.penalty > (w.memeShot ? w.memeShot.pen : 0)) triggerFreeze(pt.x, pt.y, rand(cr.d.fail), cr.d.penalty);
+    // Only big failures get the meme freeze, and not too often.
+    if (cr.d.penalty >= 12 && w.elapsed - w.lastFreeze > 25) triggerFreeze(pt.x, pt.y, rand(cr.d.fail), cr.d.penalty);
+    else if (!w.memeShot) w.memeShot = { img: snapshot(), caption: rand(cr.d.fail), pen: cr.d.penalty };
   }
 
   // ---------- Freeze-frame meme ----------
   function triggerFreeze(x, y, caption, pen, after, dur) {
     w.lastFreeze = w.elapsed;
-    w.freeze = { x, y, caption, pen, t: 0, dur: dur || (after ? 2.6 : 1.9), shot: false, after };
+    w.freeze = { x, y, caption, pen, t: 0, dur: dur || (after ? 2.4 : 1.3), shot: false, after };
     state = 'freeze';
     AU.sfx('dhan');
   }
@@ -481,8 +484,10 @@ window.BAG = window.BAG || {};
       if (w.players.every(p => p.stats.pinky === 0)) BAG.UI.achieve('pinky_escape');
     }
     if (w.players.some(p => p.stats.dances >= 5)) BAG.UI.achieve('naachunga');
-    BAG.UI.result({ won, players, izzat: Math.round(w.izzat), reachedPhase: reached, teamScore: players.reduce((a, p) => a + p.score, 0), memeShot: w.memeShot, endShot: w.endShot });
+    BAG.UI.result({ won, players, izzat: Math.round(w.izzat), reachedPhase: reached, teamScore: players.reduce((a, p) => a + p.score, 0), memeShot: w.memeShot ? Object.assign({}, w.memeShot, { img: toImg(w.memeShot.img) }) : null, endShot: toImg(w.endShot) });
   }
+
+  function toImg(s) { try { return s ? s.toDataURL('image/jpeg', 0.85) : null; } catch (e) { return null; } }
 
   function bumpTotal(k, v) {
     const t = BAG.UI.bumpTotal(k, v);
@@ -529,8 +534,10 @@ window.BAG = window.BAG || {};
   }
 
   // ---------- Interaction: clicking or pressing E on anything ----------
+  let clickCache = null;
   function allClickables() {
-    const out = [];
+    if (clickCache) return clickCache;
+    const out = clickCache = [];
     for (const k in w.npc) { const e = w.npc[k]; if (e.visible && k !== 'dj') out.push({ kind: 'npc', e, x: e.x, y: e.y - 28 * (e.scale || 1), r: 30, label: e.label }); }
     out.push({ kind: 'npc', e: w.npc.dj, x: 605, y: 425, r: 30, label: 'DJ Bunty' });
     for (const kd of w.kids) out.push({ kind: 'npc', e: kd, x: kd.x, y: kd.y - 22, r: 24, label: 'Chotu Gang' });
@@ -611,7 +618,7 @@ window.BAG = window.BAG || {};
         w.flash = 1; AU.sfx('flash');
         say(n.click, rand(BAG.POKE.click), { priority: true });
         const caps = ['Family Photo #' + (40 + w.photoN), 'Candid (zabardasti wala)', 'Fufaji ne smile nahi kiya', 'Sab ki aankhein band', 'Album ka cover photo'];
-        triggerFreeze(st.point[0], st.point[1] - 120, rand(caps), 1, null, 1.4);
+        triggerFreeze(st.point[0], st.point[1] - 120, rand(caps), 1, null, 1.0);
         return;
       }
       case 'gifts':
@@ -1031,29 +1038,37 @@ window.BAG = window.BAG || {};
     else if (state === 'freeze') {
       const f = w.freeze; f.t += dt;
       updateFx(dt * 0.2);
-      if (f.t >= f.dur) { w.freeze = null; if (f.after) f.after(); else state = 'play'; }
+      // any key or click skips the meme (except the final "shaadi cancel" one, which needs a moment)
+      const skip = f.t > 0.5 && !f.after && (Object.keys(pressed).some(k => pressed[k]) || mouse.clicked);
+      if (f.t >= f.dur || skip) { w.freeze = null; if (f.after) f.after(); else state = 'play'; }
     } else if (state === 'ending') {
       const e = w.ending; e.t += dt; e.fw -= dt;
       if (e.fw <= 0) { firework(); e.fw = 0.45 + Math.random() * 0.5; }
       if (Math.random() < dt * 8) burst(cam.x + (Math.random() - 0.5) * W, cam.y - H / 2 + 80, 2, 'confetti');
       updateFx(dt);
       for (const k in w.npc) { const n = w.npc[k]; if (n.bubble) { n.bubble.age += dt; if (n.bubble.age > n.bubble.dur) n.bubble = null; } }
-      if (e.t > 3.2 && !w.endShot) { render(); try { w.endShot = cv.toDataURL('image/jpeg', 0.85); } catch (er) { /* ignore */ } }
+      if (e.t > 3.2 && !w.endShot) w.endShot = snapshot();
       if (e.t >= e.dur) { w.ending = null; finish(true); }
     } else if (state === 'result') updateFx(dt);
     updateCamera(dt);
     updateHover();
     render();
-    if (state === 'freeze' && w.freeze && !w.freeze.shot && w.freeze.t > 0.4) {
+    if (state === 'freeze' && w.freeze && !w.freeze.shot && w.freeze.t > 0.35) {
       w.freeze.shot = true;
-      try {
-        const img = cv.toDataURL('image/jpeg', 0.85);
-        if (!w.memeShot || w.freeze.pen >= w.memeShot.pen) w.memeShot = { img, caption: w.freeze.caption, pen: w.freeze.pen };
-      } catch (er) { /* canvas export blocked */ }
+      if (!w.memeShot || w.freeze.pen >= w.memeShot.pen) w.memeShot = { img: snapshot(), caption: w.freeze.caption, pen: w.freeze.pen };
     }
     hudT -= dt;
     if (hudT <= 0 && w && !w.demo && state !== 'result' && state !== 'title') { hudT = 0.1; pushHud(); }
     for (const k in pressed) pressed[k] = false;
+    mouse.clicked = false;
+    clickCache = null;
+  }
+
+  // Cheap screenshot: copy into a small canvas now, encode to an image only when the result card needs it.
+  function snapshot() {
+    const s = document.createElement('canvas'); s.width = 640; s.height = 360;
+    s.getContext('2d').drawImage(cv, 0, 0, 640, 360);
+    return s;
   }
 
   function updateHover() {
@@ -1436,7 +1451,6 @@ window.BAG = window.BAG || {};
     if (w.shake > 0) c.translate((Math.random() - 0.5) * w.shake, (Math.random() - 0.5) * w.shake);
     const f = state === 'freeze' ? w.freeze : null;
     c.translate(W / 2, H / 2); c.scale(cam.z, cam.z); c.translate(-cam.x, -cam.y);
-    if (f && 'filter' in c) c.filter = 'saturate(0.55) contrast(1.15)';
     c.drawImage(bg, 0, 0);
     drawCars(); drawGate();
     drawStage(); drawKitchen(); drawBuffet(); drawDessert(); drawGenerator(); drawStable(); drawMandap(); drawBrideRoom(); drawPhotoBooth(); drawGifts();
@@ -1478,7 +1492,6 @@ window.BAG = window.BAG || {};
       c.fillStyle = fl.col; c.fillText(fl.text, fl.x, fl.y - fl.age * 40);
       c.globalAlpha = 1;
     }
-    if ('filter' in c) c.filter = 'none';
     c.restore();
 
     // ---- screen space ----
@@ -1614,6 +1627,7 @@ window.BAG = window.BAG || {};
   }
 
   function drawMemeOverlay(f) {
+    c.fillStyle = 'rgba(60,35,10,0.28)'; c.fillRect(0, 0, W, H); // cheap "old film" tint
     const v = c.createRadialGradient(W / 2, H / 2, 200, W / 2, H / 2, 760);
     v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.75)');
     c.fillStyle = v; c.fillRect(0, 0, W, H);
