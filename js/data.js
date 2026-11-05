@@ -429,3 +429,21 @@ Object.assign(BAG.TRACKS, {
     lyrics: ['(slow motion mein dulha aa raha hai...)', 'Sehra bhi, swag bhi, ghodi bhi!']
   }
 });
+
+// What a character tells you about an ongoing problem when you go and talk to them.
+BAG.CRISIS_TALK = {
+  paneer: { npc: 'pandey', fixer: 'Pandey Ji', lines: ['Paneer khatam ho gaya! Rasoi mein haath batao, jaldi!', 'Bas 5 minute... sach mein is baar. Paneer ban raha hai.'] },
+  power: { npc: 'mama', fixer: 'Mama Jugaadu', lines: ['Light gayi! Generator dekhna padega, chalo mere saath.', 'Tension mat lo, ek taar idhar, ek taar udhar...'] },
+  tent: { npc: 'tentwala', fixer: 'Tent Chacha', lines: ['Tent thoda... tedha hai. Bas thoda. Pakad lo zara!', 'Majboot hai! Bas ek baans hil gaya.'] },
+  dj: { npc: 'dj', fixer: 'DJ Bunty', lines: ['Kisi ne sad song ki request di thi, main kya karun?', 'Galti se lag gaya bhai, abhi badalta hoon.'] },
+  sharma: { npc: 'sharma', fixer: 'Nani', lines: ['Hamare Bunty ki shaadi mein toh live counter tha. Yahan kya hai?', 'Khana thanda hai. Hamare yahan garam milta hai.'] },
+  chashma: { npc: 'dadi', fixer: 'Saheli Tina', lines: ['Mera chashma kho gaya beta! Kahin dikha?', 'Bina chashme ke sab dhundhla dikh raha hai.'] },
+  fufaji: { npc: 'fufaji', fixer: 'Dadi', lines: ['Mujhe kisi ne poocha hi nahi.', 'Theek hai, hum kaun hote hain. Khana bhi nahi poocha.'] },
+  ghodi: { npc: 'lallan', fixer: 'Lallan', lines: ['Rani bhaag gayi!! Pakdo use!', 'Dhol ki awaaz se dar gayi bechari.'] },
+  kids: { npc: 'pandey', fixer: 'Pandey Ji', lines: ['Bachche mithai pe toot pade hain! Bhagao unko!', 'Gulab jamun gin ke rakhe the, ab dekho!'] }
+};
+
+BAG.TITLES.unshift(
+  { t: 'Sabse Baat Karne Wala Mehmaan', f: s => s.talks >= 8 ? 4 + s.talks / 4 : 0 },
+  { t: 'Rishtedaaron Ka Favourite', f: s => s.talks >= 4 ? 3.2 : 0 }
+);

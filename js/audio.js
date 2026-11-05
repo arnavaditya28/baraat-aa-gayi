@@ -360,10 +360,11 @@ BAG.Audio = (function () {
   }
   A.hasVoices = () => !!synth && voices.length > 0;
   // vp = {g, pitch, rate}; priority speech interrupts whoever is talking.
-  A.speak = function (text, vp, priority) {
+  // queue = wait for the current speaker to finish instead of skipping
+  A.speak = function (text, vp, priority, queue) {
     if (S.muted || S.voice <= 0.01) return false;
     if (!synth || !voices.length) { A.babble(text, vp && vp.g === 'f' ? 260 : 130); return false; }
-    if (!priority && (synth.speaking || synth.pending)) return false;
+    if (!priority && !queue && (synth.speaking || synth.pending)) return false;
     if (priority) synth.cancel();
     const clean = text.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '').replace(/[#*"()]/g, ' ').replace(/\s+/g, ' ').trim();
     if (!clean) return false;

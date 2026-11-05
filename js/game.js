@@ -6,7 +6,7 @@ window.BAG = window.BAG || {};
   const WW = 2560, WH = 1600;       // world size
   const R = BAG.R, AU = BAG.Audio, CAST = BAG.CAST, CR = BAG.CRISES, PHASES = BAG.PHASES;
   const G = BAG.Game = {};
-  const TIME_SCALE = 1.45;          // crisis timers are longer because the venue is bigger
+  const TIME_SCALE = 2.2;           // crisis timers: long, so the game is not rushed
   const PLAYER_SPEED = 265;
 
   let cv, c, bg;
@@ -166,7 +166,7 @@ window.BAG = window.BAG || {};
 
   function newWorld(cfg) {
     const nw = {
-      cfg, solo: cfg.players.length <= 1, players: [], npc: {}, kids: [], items: [], crises: [], particles: [], floats: [],
+      cfg, solo: cfg.players.length <= 1, watch: cfg.play === 'watch', players: [], npc: {}, kids: [], items: [], crises: [], particles: [], floats: [],
       izzat: 100, phase: 0, phaseT: 0, spawnT: 5, cooldown: {}, fails: {}, lastFreeze: -99, shake: 0, flash: 0,
       rain: false, dark: false, tentDown: 0, memeShot: null, chatterT: 2.5, clickT: 22, elapsed: 0, blessCool: 0,
       mamaWin: 0, freeze: null, ending: null, drops: [], djReq: null, djIdx: 0, musicOverride: null, photoN: 0, fwCool: 0, photoCool: 0
@@ -177,7 +177,7 @@ window.BAG = window.BAG || {};
         idx: i, isPlayer: true, name: pc.name, x: 880 + i * 90, y: 860, r: 13, look: JSON.parse(JSON.stringify(LOOKS[lookName])), lookName,
         color: PCOLORS[i], label: pc.name, labelColor: PCOLORS[i], moving: false, walk: 0, seed: i * 3, frozen: 0, frozenBy: null,
         carry: null, score: 0, hint: null, holdShow: 0, danceCool: 0, bubble: null, voice: 180 + i * 60, boost: 0, hopT: 0, faceT: 0,
-        stats: { fixes: 0, paneer: 0, power: 0, tent: 0, dj: 0, sharma: 0, chashma: 0, fufaji: 0, ghodi: 0, kids: 0, pinky: 0, dances: 0, photos: 0 }
+        stats: { fixes: 0, paneer: 0, power: 0, tent: 0, dj: 0, sharma: 0, chashma: 0, fufaji: 0, ghodi: 0, kids: 0, pinky: 0, dances: 0, photos: 0, talks: 0 }
       });
     });
     const n = nw.npc;
@@ -212,6 +212,10 @@ window.BAG = window.BAG || {};
   }
 
   // ---------- Game start / phases ----------
+  // Mehmaan mode is slower: each ceremony lasts longer, and you can skip ahead.
+  const phDur = ph => w.watch ? 160 : ph.dur;
+  G.skipPhase = function () { if (state === 'play' && w.watch) w.phaseT = phDur(PHASES[w.phase]); };
+
   G.start = function (cfg) {
     w = newWorld(cfg);
     state = 'play';
@@ -287,24 +291,24 @@ window.BAG = window.BAG || {};
     if (e.kid) return BAG.VOICES.chotu;
     return BAG.VOICES[e.key] || { g: 'm', pitch: 1, rate: 1 };
   }
-  // opts: {dur, force (speak even off-screen), priority (interrupt current speech)}
+  // People only talk when you talk to them. Lines without {priority} (you started it) or
+  // {ending} (the final scene) are dropped: no bubble, no voice.
   function say(e, text, opts) {
     if (!text || !e) return;
     opts = opts || {};
+    if (!opts.priority && !opts.ending) return;
     text = text.replace(/\{name\}/g, () => pickName());
     e.bubble = { text, age: 0, dur: opts.dur || clamp(text.length * 0.075, 2.4, 4.5) };
     if (w.demo) return;
-    const visible = onScreen(e.x, e.y, 60);
-    if (opts.priority || opts.force || visible) {
-      const spoke = AU.speak(text, voiceOf(e), !!opts.priority);
-      if (!spoke && babbleCool <= 0 && visible) { babbleCool = 0.35; }
-    }
+    AU.speak(text, voiceOf(e), !!opts.priority, !!opts.ending);
   }
 
   // ---------- Crises ----------
+  // Kaam Karo is calmer now: fewer problems at once, more time between them.
+  const MAX_ACTIVE = { task: [[1, 2], [2, 2], [2, 3]], watch: [[2, 2], [2, 2], [2, 2]] };
   function trySpawn() {
     const ph = PHASES[w.phase];
-    const max = ph.maxActive[w.solo ? 0 : 1];
+    const max = MAX_ACTIVE[w.watch ? 'watch' : 'task'][w.phase][w.solo ? 0 : 1];
     if (w.crises.length >= max) return;
     const opts = Object.keys(CR).filter(k => CR[k].phases.includes(ph.id) && !w.crises.some(x => x.type === k) && (w.cooldown[k] || 0) <= w.elapsed);
     if (!opts.length) return;
@@ -317,6 +321,7 @@ window.BAG = window.BAG || {};
     const d = CR[type], n = w.npc;
     const tm = d.time * TIME_SCALE;
     const cr = { type, d, t: tm, max: tm, progress: 0, id: ++uid, x: 0, y: 0, title: d.title };
+    if (w.watch) { cr.auto = cr.autoMax = 10 + Math.random() * 8; }
     if (d.station) { cr.x = STATIONS[d.station].point[0]; cr.y = STATIONS[d.station].point[1]; }
     switch (type) {
       case 'paneer': say(n.pandey, rand(CAST.pandey.idle), { force: true }); break;
@@ -397,19 +402,19 @@ window.BAG = window.BAG || {};
     cleanup(cr, 'fixed');
     const n = w.npc, pt = crisisPoint(cr);
     let pts = 100;
-    if (cr.type === 'ghodi') { pts = 150; say(n.lallan, rand(CAST.lallan.caught), { force: true }); }
-    if (cr.type === 'fufaji') { pts = 120; say(n.fufaji, rand(CAST.fufaji.calmed), { priority: true }); bumpTotal('fufaji', 1); }
-    if (cr.type === 'chashma') { pts = 100 + cr.d.bonus; say(n.dadi, rand(CAST.dadi.thanks), { priority: true }); }
-    if (cr.type === 'paneer') { say(n.pandey, rand(CAST.pandey.fixed), { priority: true }); AU.sfx('cooker'); }
-    if (cr.type === 'dj') say(n.dj, rand(CAST.dj.fixed), { priority: true });
-    if (cr.type === 'sharma') say(n.sharma, rand(CAST.sharma.calmed), { priority: true });
+    if (cr.type === 'ghodi') { pts = 150; say(n.lallan, rand(CAST.lallan.caught), { priority: !!p }); }
+    if (cr.type === 'fufaji') { pts = 120; say(n.fufaji, rand(CAST.fufaji.calmed), { priority: !!p }); bumpTotal('fufaji', 1); }
+    if (cr.type === 'chashma') { pts = 100 + cr.d.bonus; say(n.dadi, rand(CAST.dadi.thanks), { priority: !!p }); }
+    if (cr.type === 'paneer') { say(n.pandey, rand(CAST.pandey.fixed), { priority: !!p }); AU.sfx('cooker'); }
+    if (cr.type === 'dj') say(n.dj, rand(CAST.dj.fixed), { priority: !!p });
+    if (cr.type === 'sharma') say(n.sharma, rand(CAST.sharma.calmed), { priority: !!p });
     if (cr.type === 'power') AU.sfx('powerup');
-    if (cr.type === 'tent') say(n.tentwala, 'Dekha? Majboot hai!', { priority: true });
+    if (cr.type === 'tent') say(n.tentwala, 'Dekha? Majboot hai!', { priority: !!p });
     if (p) {
       p.score += pts; p.stats.fixes++;
       if (cr.type !== 'kids' && p.stats[cr.type] !== undefined) p.stats[cr.type]++;
       floatText(pt.x, pt.y - 30, '+' + pts, p.color);
-    } else floatText(pt.x, pt.y - 30, 'Jugaad!', '#55efc4');
+    } else floatText(pt.x, pt.y - 30, '✓ ' + (BAG.CRISIS_TALK[cr.type] ? BAG.CRISIS_TALK[cr.type].fixer : 'Jugaad') + ' ne sambhal liya', '#55efc4');
     w.izzat = Math.min(100, w.izzat + 3);
     AU.sfx('tadaa');
     burst(pt.x, pt.y - 20, 26, 'petal');
@@ -425,7 +430,7 @@ window.BAG = window.BAG || {};
     w.izzat = Math.max(0, w.izzat - cr.d.penalty);
     if (cr.type === 'tent') { w.tentDown = 4; say(n.tentwala, rand(CAST.tentwala.fail), { force: true }); }
     if (cr.type === 'ghodi') bumpTotal('ghodiFails', 1);
-    if (cr.type === 'fufaji') say(n.fufaji, 'Theek hai, hum chale jaate hain. Hum kaun hote hain.', { priority: true });
+    if (cr.type === 'fufaji') 
     if (cr.type === 'kids') { const k = w.kids.find(k => k.crid === cr.id); if (k) say(k, 'Hehehe! Gulab jamun hamare!'); }
     if (w.fails.paneer >= 3) BAG.UI.achieve('paneer_gone');
     AU.sfx(Math.random() < 0.5 ? 'trombone' : 'sadviolin'); AU.sfx('ohh');
@@ -454,9 +459,9 @@ window.BAG = window.BAG || {};
     Object.values(n).forEach(e => { e.mood = 'happy'; e.moodT = 99; });
     n.dulha.visible = n.dulhan.visible = true;
     n.dulha.x = 1195; n.dulha.y = 995; n.dulhan.x = 1268; n.dulhan.y = 995; n.dulhan.tx = null;
-    say(n.fufaji, 'Achha... theek hai. Shaadi achhi thi.', { dur: 5, priority: true });
-    setTimeout(() => { if (w.ending) say(n.nani, 'Jeete raho bachchon! Sab ro rahe hain!', { dur: 4, force: true }); }, 2600);
-    setTimeout(() => { if (w.ending) say(n.dadi, 'Muhurat pe ho gaya! Ab sab khana kha lo!', { dur: 3.5, force: true }); }, 4600);
+    say(n.fufaji, 'Achha... theek hai. Shaadi achhi thi.', { dur: 5, ending: true });
+    setTimeout(() => { if (w.ending) say(n.nani, 'Jeete raho bachchon! Sab ro rahe hain!', { dur: 4, ending: true }); }, 2600);
+    setTimeout(() => { if (w.ending) say(n.dadi, 'Muhurat pe ho gaya! Ab sab khana kha lo!', { dur: 3.5, ending: true }); }, 4600);
   }
 
   function lose(pt) {
@@ -575,12 +580,21 @@ window.BAG = window.BAG || {};
 
   function poke(e) {
     const key = e.pokeKey || e.key;
-    const lines = BAG.POKE[key] || (CAST[key] && CAST[key].idle) || ['Haan?'];
+    let lines = BAG.POKE[key] || (CAST[key] && CAST[key].idle) || ['Haan?'];
+    // if this person is part of something going on right now, they tell you about it
+    const cr = w.crises.find(x => BAG.CRISIS_TALK[x.type] && BAG.CRISIS_TALK[x.type].npc === key);
+    if (cr) lines = BAG.CRISIS_TALK[cr.type].lines;
     e.hopT = 0.45;
     say(e, rand(lines), { priority: true });
+    // count conversations (one per person) for the result card
+    const who = actor || w.players[0];
+    w.talked = w.talked || new Set();
+    if (who && !w.talked.has(key)) { w.talked.add(key); who.stats.talks++; who.score += 10; floatText(e.x, e.y - 90, '+10 💬', who.color); }
   }
 
+  let actor = null;
   function interact(t, p, byClick) {
+    actor = p;
     const n = w.npc;
     const pNear = (x, y, r) => p && Math.hypot(p.x - x, p.y - y) < (r || 130);
     if (t.kind === 'npc') {
@@ -700,7 +714,7 @@ window.BAG = window.BAG || {};
     w.spawnT -= dt;
     if (w.spawnT <= 0) {
       trySpawn();
-      w.spawnT = ph.spawnEvery[w.solo ? 0 : 1] * (0.75 + Math.random() * 0.5) * 1.15;
+      w.spawnT = ph.spawnEvery[w.solo ? 0 : 1] * (0.75 + Math.random() * 0.5) * (w.watch ? 2.2 : 1.9);
     }
     updatePlayers(dt);
     updateNPCs(dt);
@@ -708,7 +722,7 @@ window.BAG = window.BAG || {};
     updateFx(dt);
     chatter(dt);
     pickMusic();
-    if (state === 'play' && w.phaseT >= ph.dur) endPhase();
+    if (state === 'play' && w.phaseT >= phDur(ph)) endPhase();
   }
 
   const nearPoint = (p, x, y, r) => Math.hypot(p.x - x, p.y - y) <= r;
@@ -794,7 +808,7 @@ window.BAG = window.BAG || {};
             cr.mamaWork -= dt;
             if (cr.mamaWork <= 0) {
               cr.mamaT = null; m.tx = m.hx; m.ty = m.hy;
-              if (Math.random() < 0.45) { say(m, rand(CAST.mama.success), { force: true }); BAG.UI.achieve('jugaad'); w.mamaWin++; resolveCrisis(cr, null); continue; }
+              if (w.watch || Math.random() < 0.45) { say(m, rand(CAST.mama.success), { force: true }); BAG.UI.achieve('jugaad'); w.mamaWin++; resolveCrisis(cr, null); continue; }
               say(m, rand(CAST.mama.fail), { force: true });
             }
           }
@@ -803,6 +817,18 @@ window.BAG = window.BAG || {};
       if (cr.type === 'kids') {
         const mine = w.kids.filter(k => k.crid === cr.id);
         if (mine.length && mine.every(k => k.state === 'flee')) { resolveCrisis(cr, cr.lastShooer || null); continue; }
+      }
+      if (w.watch) {
+        if (cr.type === 'ghodi') {
+          // Lallan runs after Rani and catches her
+          const l = n.lallan, g = w.ghodi;
+          l.tx = g.x - 30; l.ty = g.y; l.speed = 190; moveTo(l, dt, true);
+          if (Math.hypot(l.x - g.x, l.y - g.y) < 55) { l.tx = l.hx; l.ty = l.hy; l.speed = 90; l.returning = true; resolveCrisis(cr, null); continue; }
+        } else if (cr.type !== 'power' && cr.auto != null) {
+          cr.auto -= dt;
+          if (cr.auto <= 0) { resolveCrisis(cr, null); continue; }
+        }
+        continue;
       }
       if (cr.t <= 0) failCrisis(cr);
       if (state !== 'play') return;
@@ -825,6 +851,7 @@ window.BAG = window.BAG || {};
     n.dadi.noGlasses = w.crises.some(x => x.type === 'chashma');
 
     moveTo(n.mama, dt);
+    if (!w.crises.some(x => x.type === 'ghodi') && n.lallan.tx != null) moveTo(n.lallan, dt, true);
     ['raju', 'band1', 'band2', 'dulha', 'dulhan'].forEach(key => { const e = n[key]; if (e.visible && e.tx != null) moveTo(e, dt, true); });
 
     for (const key of ['selfie', 'click', 'pinky']) {
@@ -844,10 +871,10 @@ window.BAG = window.BAG || {};
       const cb = n.click;
       if (w.clickT <= 1.4 && !cb.photoCalled) { cb.photoCalled = true; say(cb, rand(CAST.click.idle)); cb.tx = null; cb.pauseT = 2.5; }
       if (w.clickT <= 0) {
-        cb.photoCalled = false; w.clickT = 20 + Math.random() * 10;
+        cb.photoCalled = false; w.clickT = 35 + Math.random() * 15;
         if (onScreen(cb.x, cb.y)) { w.flash = 1; AU.sfx('flash'); }
         for (const p of w.players) {
-          if (dist(p, cb) < 190 && p.frozen <= 0) {
+          if (!w.watch && dist(p, cb) < 170 && p.frozen <= 0) {
             p.frozen = 1.4; p.frozenBy = 'photo'; p.stats.photos++; bumpTotal('photos', 1);
             say(p, rand(['Bhaiya jaldi! Kaam hai!', 'Cheese... ab jaane do?', 'Ek aur? Nahi!']));
           }
@@ -861,7 +888,7 @@ window.BAG = window.BAG || {};
       if (b.tx == null) { const s = [[760, 450], [1080, 450], [920, 430], [920, 660], [760, 650], [1080, 650]]; const p = rand(s); b.tx = p[0]; b.ty = p[1]; b.speed = 50; }
       moveTo(b, dt, true);
       for (const p of w.players) {
-        if (p.frozen <= 0 && p.danceCool <= 0 && dist(p, b) < 32) {
+        if (!w.watch && p.frozen <= 0 && p.danceCool <= 0 && dist(p, b) < 32) {
           p.frozen = 1.3; p.frozenBy = 'dance'; p.danceCool = 3; p.stats.dances++;
           say(p, 'Main bhi naachunga!'); say(b, rand(CAST.bablu.idle));
         }
@@ -881,7 +908,7 @@ window.BAG = window.BAG || {};
       if (moveTo(g, dt, false) || g.tx == null) { g.state = 'idle'; g.x = g.hx; g.y = g.hy; }
     } else if (g.state === 'run') {
       g.running = true;
-      g.speed = w.solo ? 205 : 230;
+      g.speed = w.watch ? 120 : (w.solo ? 180 : 205);
       g.retarget -= dt;
       if (g.tx == null || g.retarget <= 0) {
         const near = w.players.length ? w.players.reduce((a, p) => dist(p, g) < dist(a, g) ? p : a) : g;
@@ -922,18 +949,18 @@ window.BAG = window.BAG || {};
     e.cool -= dt;
     const targets = w.players.filter(p => p.frozen <= 0);
     const t = targets.length ? targets.reduce((a, p) => dist(p, e) < dist(a, e) ? p : a) : null;
-    if (e.cool > 0 || !t || dist(t, e) > 520) {
+    if (w.watch || e.cool > 0 || !t || dist(t, e) > 380) {
       e.chasing = false;
       if (e.tx == null) { const p = rand(WAYPOINTS); e.tx = p[0]; e.ty = p[1]; }
       e.speed = 70; moveTo(e, dt); return;
     }
-    e.tx = t.x; e.ty = t.y; e.speed = 85;
+    e.tx = t.x; e.ty = t.y; e.speed = 72;
     moveTo(e, dt);
     e.chasing = dist(t, e) < 200;
     if (dist(t, e) < 28) {
       t.frozen = 2.6; t.frozenBy = 'pinky'; t.stats.pinky++;
       say(e, rand(CAST.pinky.idle).replace(/\{name\}/g, t.name), { dur: 3, priority: true });
-      e.cool = 8; e.tx = null; e.chasing = false;
+      e.cool = 16; e.tx = null; e.chasing = false;
     }
   }
 
@@ -1098,17 +1125,19 @@ window.BAG = window.BAG || {};
 
   function pushHud() {
     const ph = PHASES[w.phase];
-    const left = Math.max(0, ph.dur - w.phaseT);
+    const left = Math.max(0, phDur(ph) - w.phaseT);
     let clock = null;
     if (ph.id === 3) {
-      const mins = 30 + 12 * Math.min(1, w.phaseT / ph.dur);
+      const mins = 30 + 12 * Math.min(1, w.phaseT / phDur(ph));
       const m = Math.floor(mins), s = Math.floor((mins - m) * 60);
       clock = '10:' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + ' PM';
     }
     BAG.UI.hud({
-      phase: 'Phase ' + ph.id + ': ' + ph.name, left, clock, izzat: w.izzat,
+      phase: 'Phase ' + ph.id + ': ' + ph.name, left, clock, izzat: w.izzat, watch: w.watch,
       players: w.players.map(p => ({ name: p.name, score: p.score, color: p.color })),
-      alerts: w.crises.map(cr => ({ id: cr.id, icon: cr.d.icon, title: cr.title, hint: cr.d.hint, frac: cr.t / cr.max }))
+      alerts: w.crises.map(cr => ({ id: cr.id, icon: cr.d.icon, title: cr.title, watch: w.watch,
+        hint: w.watch ? (BAG.CRISIS_TALK[cr.type] ? BAG.CRISIS_TALK[cr.type].fixer : 'Koi') + ' sambhal rahe hain...' : cr.d.hint,
+        frac: w.watch ? (cr.auto != null ? cr.auto / cr.autoMax : 0.5) : cr.t / cr.max }))
     });
   }
 

@@ -53,6 +53,14 @@ BAG.UI = (function () {
 
     // Mode toggle
     let mode = saved.mode || 1;
+    let play = saved.play || 'watch';
+    const setPlay = m => {
+      play = m;
+      document.querySelectorAll('[data-play]').forEach(b => b.classList.toggle('on', b.dataset.play === m));
+    };
+    document.querySelectorAll('[data-play]').forEach(b => b.addEventListener('click', () => { setPlay(b.dataset.play); AU.sfx('click'); }));
+    setPlay(play);
+    $('#btn-next').addEventListener('click', () => BAG.Game.skipPhase());
     let looks = saved.looks || ['kurta', 'lehenga'];
     const setMode = m => {
       mode = m;
@@ -78,10 +86,10 @@ BAG.UI = (function () {
       if (!$('#p1-name').value.trim()) { nudge('#p1-name', 'Naam toh likho beta!'); return; }
       if (mode === 2 && !$('#p2-name').value.trim()) { nudge('#p2-name', 'Dost ka naam bhi likho!'); return; }
       if (a.msg || b.msg) U.toast(a.msg || b.msg);
-      store('bag_names', { p1: $('#p1-name').value, p2: $('#p2-name').value, mode, looks });
+      store('bag_names', { p1: $('#p1-name').value, p2: $('#p2-name').value, mode, looks, play });
       const players = [{ name: a.name, look: looks[0] }];
       if (mode === 2) players.push({ name: b.name, look: looks[1] });
-      lastCfg = { players };
+      lastCfg = { players, play };
       begin();
     };
     $('#btn-start').addEventListener('click', start);
@@ -223,6 +231,8 @@ BAG.UI = (function () {
   const alertEls = new Map();
   U.hud = function (d) {
     $('#hud-phase').textContent = d.phase;
+    $('#hud').classList.toggle('watch', !!d.watch);
+    $('#btn-next').classList.toggle('hide', !d.watch);
     const s = Math.ceil(d.left);
     $('#hud-time').textContent = d.clock ? '🕰 ' + d.clock + ' · Muhurat 10:42' : '⏱ ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
     const iz = Math.max(0, Math.round(d.izzat));
@@ -410,7 +420,9 @@ BAG.UI = (function () {
       R.wrap(c, '"' + p.title + '"', 760).slice(0, 2).forEach((l, i) => c.fillText(l, 250, y + 108 + i * 38));
       c.font = '600 24px ' + F; c.fillStyle = '#dfe6e9';
       const s = p.stats;
-      const bits = ['Score ' + p.score, s.fixes + ' kaam'];
+      const bits = ['Score ' + p.score];
+      if (s.talks) bits.push(s.talks + ' logon se baat ki');
+      if (s.fixes) bits.push(s.fixes + ' kaam');
       if (s.ghodi) bits.push(s.ghodi + ' baar Rani pakdi');
       if (s.fufaji) bits.push('Fufaji ' + s.fufaji + 'x manaye');
       if (s.pinky) bits.push('Pinky Bua ne ' + s.pinky + 'x pakda');

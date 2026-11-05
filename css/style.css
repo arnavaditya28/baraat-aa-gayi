@@ -57,6 +57,10 @@ h2 { margin: 0 0 4px; color: var(--gold); font-size: 30px; }
 .chip:hover { transform: translateY(-2px); }
 .chip.on { background: var(--gold); color: var(--maroon); border-color: var(--gold); }
 .chip.small { font-size: 15px; padding: 4px 12px; }
+.chip.play { border-radius: 16px; display: flex; flex-direction: column; align-items: center; line-height: 1.15; padding: 6px 22px; min-width: 300px; }
+.chip.play small { font-size: 13px; font-weight: 600; opacity: 0.85; }
+#btn-next { font-size: 14px; padding: 4px 10px; white-space: nowrap; }
+#hud.watch .hud-mid { visibility: hidden; }
 .player-row { display: flex; align-items: center; gap: 8px; }
 .ptag { font-weight: 800; border-radius: 8px; padding: 2px 8px; color: var(--maroon); font-size: 16px; }
 .ptag.p1 { background: #ffd166; } .ptag.p2 { background: #74b9ff; }

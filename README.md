@@ -2,7 +2,12 @@
 
 A desi shaadi co-op game that runs in the browser. The baraat is coming, the paneer has run out, Fufaji is upset, and the ghodi just ran off. Keep the wedding going until the 10:42 muhurat.
 
-Play solo or with two people on one laptop.
+Play solo or with two people on one laptop, in one of two modes:
+
+- **👀 Mehmaan Mode**: you're a guest. Walk around and talk to anyone while the wedding happens around you. When something goes wrong, the right person sorts it out (Lallan chases the ghodi, Mama fixes the generator, Pandey Ji makes more paneer). No timers or penalties, and an "Agli Rasam" button skips to the next ceremony.
+- **💪 Kaam Karo Mode**: you handle the problems yourself before their timers run out.
+
+Nobody talks unless you talk to them. If someone is part of a problem, they tell you about it when you go to them.
 
 ## How to play
 
