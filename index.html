@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Baraat Aa Gayi!</title>
+  <meta name="description" content="Ek desi shaadi co-op game. Paneer bachao, Fufaji manao, ghodi pakdo. Solo ya do log, ek laptop pe.">
+  <meta property="og:title" content="Baraat Aa Gayi! 🐴🥁">
+  <meta property="og:description" content="Shaadi mein help chahiye! Paneer khatam, Fufaji naraaz, ghodi bhaag gayi. Browser mein khelo.">
+  <meta name="theme-color" content="#4a0e1a">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐴</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="game" width="1280" height="720"></canvas>
+
+    <!-- ===== Title screen ===== -->
+    <div id="title" class="screen">
+      <div class="logo">
+        <div class="logo-main">BARAAT AA GAYI!</div>
+        <div class="logo-sub">Ek desi shaadi. Bahut saara chaos. 🥁🐴</div>
+      </div>
+      <div class="panel title-panel">
+        <div class="mode-row">
+          <button class="chip" data-mode="1">🧍 Akele (Solo)</button>
+          <button class="chip" data-mode="2">👯 Do Log, Ek Laptop</button>
+        </div>
+        <div class="player-row">
+          <span class="ptag p1">P1</span>
+          <input id="p1-name" maxlength="12" placeholder="Tumhara naam kya hai, beta?" autocomplete="off" spellcheck="false">
+          <button class="chip small" data-look="0" data-val="kurta">Kurta</button>
+          <button class="chip small" data-look="0" data-val="lehenga">Lehenga</button>
+        </div>
+        <div class="player-row" id="p2-row">
+          <span class="ptag p2">P2</span>
+          <input id="p2-name" maxlength="12" placeholder="Dost ka naam?" autocomplete="off" spellcheck="false">
+          <button class="chip small" data-look="1" data-val="kurta">Kurta</button>
+          <button class="chip small" data-look="1" data-val="lehenga">Lehenga</button>
+        </div>
+        <button id="btn-start" class="big-btn">Shaadi Shuru Karo 🎉</button>
+        <div class="row-btns">
+          <button id="btn-invite" class="btn wa">📲 Dost Ko Bulao (WhatsApp)</button>
+          <button id="btn-howto" class="btn">❓ Kaise Khelein?</button>
+          <button id="btn-settings" class="btn">🔊 Awaaz (Mummy so rahi hai?)</button>
+        </div>
+        <div id="controls-text" class="controls"></div>
+        <div class="ach-wrap">
+          <div class="ach-head">Achievements <span id="ach-count"></span></div>
+          <div id="ach-list"></div>
+        </div>
+      </div>
+      <div id="tap-hint">👆 Kahin bhi click karo, dhol bajao!</div>
+    </div>
+
+    <!-- ===== HUD ===== -->
+    <div id="hud" class="hide">
+      <div class="hud-left">
+        <div id="hud-phase"></div>
+        <div id="hud-time"></div>
+      </div>
+      <div class="hud-mid">
+        <div class="izzat-label">Khandaan Ki Izzat <b id="izzat-val">100</b></div>
+        <div class="izzat-bar"><div id="izzat-fill"></div></div>
+      </div>
+      <div class="hud-right">
+        <div id="hud-scores"></div>
+        <button id="btn-pause" class="icon-btn" title="Pause (Esc)">⏸</button>
+      </div>
+    </div>
+    <button id="btn-mute" class="icon-btn mute-btn" title="Mute karo (M)">🔊</button>
+    <div id="mute-badge" class="hide">🔇 Muted (M dabao)</div>
+    <div id="alerts"></div>
+    <div id="lyrics" class="hide"></div>
+    <div id="banner" class="hide"></div>
+    <div id="toasts"></div>
+
+    <!-- ===== Pause ===== -->
+    <div id="pause" class="screen dim hide">
+      <div class="panel center-panel">
+        <h2>Ruko zara, sabar karo ✋</h2>
+        <p class="muted">Shaadi ruki hui hai. Fufaji abhi bhi naraaz hain.</p>
+        <button id="btn-resume" class="big-btn">Wapas Chalo</button>
+        <button id="btn-pause-settings" class="btn">🔊 Awaaz Settings</button>
+        <button id="btn-quit" class="btn">🏠 Main Menu</button>
+      </div>
+    </div>
+
+    <!-- ===== Settings ===== -->
+    <div id="settings" class="screen dim hide">
+      <div class="panel center-panel">
+        <h2>Awaaz (Mummy so rahi hai?)</h2>
+        <label class="slider">🎵 Music <input id="vol-music" type="range" min="0" max="100"></label>
+        <label class="slider">💥 Sound Effects <input id="vol-sfx" type="range" min="0" max="100"></label>
+        <label class="slider">🗣️ Rishtedaaron ki awaaz <input id="vol-voice" type="range" min="0" max="100"></label>
+        <button id="btn-hostel" class="btn">🤫 Hostel Mode (sab dheema)</button>
+        <p class="muted"><b>M</b> dabao kabhi bhi, sab mute/unmute ho jaayega.</p>
+        <button id="btn-settings-close" class="big-btn">Theek Hai</button>
+      </div>
+    </div>
+
+    <!-- ===== How to play ===== -->
+    <div id="howto" class="screen dim hide">
+      <div class="panel center-panel wide">
+        <h2>Kaise Khelein? 🤔</h2>
+        <div class="howto-grid">
+          <div><b>Chalo:</b> WASD (P1) · Arrow keys (P2)<br><b>Kaam karo:</b> <b>E</b> (P1) · <b>Enter</b> (P2) dabake rakho<br><b>Pause:</b> Esc · <b>Mute:</b> M</div>
+          <div>Jahan <b>❗ bubble</b> dikhe, wahan jaake button <b>hold</b> karo. Timer khatam = <b>Izzat kam</b>. Izzat 0 = shaadi cancel!</div>
+          <div>😤 <b>Fufaji naraaz:</b> Buffet se plate lo, Fufaji tak le jao.<br>🐴 <b>Ghodi bhaagi:</b> Rani ko chhoo lo.<br>🍮 <b>Chotu gang:</b> Bachchon ko chhoo ke bhagao.<br>👓 <b>Dadi ka chashma:</b> Dhoondo aur Dadi ko do.</div>
+          <div>🙏 <b>Nani</b> ke paas jaake button dabao: Izzat wapas!<br>💍 <b>Pinky Bua</b> se bacho (pakad le toh button jaldi jaldi dabao).<br>🕺 <b>Bablu Chacha</b> ko chhua toh naachna padega.<br>📸 <b>Click Bhaiya</b> "family photo" bole toh door bhaago.</div>
+        </div>
+        <p class="muted">3 phase: Taiyari → Baraat Aa Gayi! → Pheras. Muhurat 10:42 ka hai. Do log ek saath kaam karein toh jaldi hota hai.</p>
+        <button id="btn-howto-close" class="big-btn">Samajh Gaya!</button>
+      </div>
+    </div>
+
+    <!-- ===== News break ===== -->
+    <div id="news" class="screen hide">
+      <div class="news-box">
+        <div class="news-top"><span class="live">● LIVE</span> SHAADI NEWS 24x7</div>
+        <div class="news-breaking">BREAKING NEWS</div>
+        <div id="news-head"></div>
+        <div class="news-ticker-wrap"><div id="news-ticker"></div></div>
+        <button id="btn-news-next" class="big-btn">Agla Phase →</button>
+      </div>
+    </div>
+
+    <!-- ===== Result ===== -->
+    <div id="result" class="screen dim hide">
+      <div class="result-wrap">
+        <img id="card-img" alt="Result card">
+        <div class="result-side">
+          <h2 id="result-head"></h2>
+          <p class="muted">Ye card download karo aur group mein bhejo. Rishtedaar bhi dekhein.</p>
+          <button id="btn-download" class="big-btn">⬇️ Card Download Karo</button>
+          <button id="btn-wa" class="btn wa">📲 WhatsApp Pe Bhejo</button>
+          <button id="btn-share" class="btn">📤 Share</button>
+          <button id="btn-again" class="btn">🔁 Phir Se Shaadi</button>
+          <button id="btn-menu" class="btn">🏠 Main Menu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    BAG.UI.init();
+    BAG.Game.init(document.getElementById('game'));
+  </script>
+</body>
+</html>

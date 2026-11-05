@@ -1,0 +1,64 @@
+# Baraat Aa Gayi! 🐴🥁
+
+A desi shaadi co-op game that runs in the browser. The baraat is coming, the paneer has run out, Fufaji is upset, and the ghodi just ran off. Keep the wedding going until the 10:42 muhurat.
+
+Play solo or with two people on one laptop.
+
+## How to play
+
+| | Player 1 | Player 2 |
+|---|---|---|
+| Move | WASD | Arrow keys |
+| Do the job (hold) | E | Enter |
+
+- **Esc**: pause
+- **M**: mute or unmute (any time)
+
+When a ❗ bubble appears somewhere, go there and hold your action key. If the timer runs out, the family's **Izzat** drops. At 0 the wedding is cancelled.
+
+- 😤 **Fufaji naraaz**: take a plate from the buffet and bring it to him
+- 🐴 **Ghodi bhaag gayi**: catch Rani by touching her
+- 🍮 **Chotu gang**: touch the kids to chase them off the mithai
+- 👓 **Dadi ka chashma**: find the glasses and bring them to Dadi
+- 🙏 **Nani**: press your key next to her for her blessing (+Izzat, has a cooldown)
+- 💍 **Pinky Bua**: avoid her. If she catches you, mash your key to escape
+- 🕺 **Bablu Chacha**: touch him and you have to dance
+- 📸 **Click Bhaiya**: when he calls for a family photo, get away
+
+The wedding has three phases: **Taiyari → Baraat Aa Gayi! → Pheras**. At the end you get a result card (expectation vs reality, a funny title for each player) to download or send on WhatsApp.
+
+## Run it locally
+
+No build step and no dependencies. Either open `index.html` directly, or serve the folder:
+
+```bash
+python -m http.server 8765
+```
+
+then open http://localhost:8765.
+
+## Project layout
+
+```
+index.html        screens and HUD markup
+css/style.css     all styling
+js/data.js        relatives, dialogue, crises, songs, headlines, titles (edit content here)
+js/audio.js       procedural music and sound effects (Web Audio API)
+js/render.js      drawing: characters, ghodi, lights, bubbles
+js/game.js        game loop, world, crises, phases, freeze-frame memes
+js/ui.js          title screen, HUD, news break, settings, result card, sharing
+```
+
+Most new content (a relative, a dialogue line, a crisis, a song) only needs a change in `js/data.js`.
+
+## Originality
+
+All music is synthesized in code from original melodies and lyrics. There are no film songs, clips, real meme images or celebrity likenesses. Every character is an original type, and the jokes are about situations, not communities.
+
+## Ideas for later
+
+- Online co-op with a room code (WebRTC)
+- 3–4 player roles
+- Regional weddings: Punjabi, South Indian, Bengali, Marwari
+- Sangeet, haldi and mehendi levels
+- Short replay clips of the worst moment
